@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculadora de Notas ✨</title>
+  <style>
+    :root{
+      --glass-bg: rgba(229, 229, 229, 0.12);
+      --glass-border: rgba(255,255,255,0.18);
+      --accent: #ff6b6b;
+      --accent-2: #6b8bff;
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.7);
+      --card-radius: 16px;
+    }
+
+    *{box-sizing: border-box}
+    html,body{height:100%;margin:0;font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    body{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: linear-gradient(180deg, rgba(11,19,40,0.85), rgba(44,58,80,0.85)), url('escola.jpg') center/cover no-repeat;
+      padding: 24px;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .card {
+      width: min(520px, 96%);
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border-radius: var(--card-radius);
+      padding: 22px;
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(8px) saturate(120%);
+      box-shadow: 0 10px 30px rgba(2,6,23,0.45);
+      display: grid;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* header */
+    .header {
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo {
+      width:64px;height:64px;border-radius:12px;
+      display:grid;place-items:center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color:white;font-weight:700;font-size:24px;
+      box-shadow: 0 6px 18px rgba(107,91,255,0.18);
+    }
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    form{
+      display:grid;
+      gap:10px;
+      grid-template-columns: repeat(2, 1fr);
+      align-items:end;
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    input[type="number"]{
+      -moz-appearance: textfield;
+      width:100%;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      color: white;
+      outline: none;
+      font-size:15px;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    input[type="number"]:focus{
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(99,102,241,0.12);
+      border-color: rgba(107,91,255,0.6);
+    }
+
+    .full {
+      grid-column: 1 / -1;
+      display:flex;
+      gap:8px;
+    }
+
+    .btn {
+      flex:1;
+      padding:10px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      border:none;
+      font-weight:700;
+      letter-spacing:.4px;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+    .calc {
+      background: linear-gradient(90deg, var(--accent), #ff8f6b);
+      color:white;
+      box-shadow: 0 8px 24px rgba(255,107,107,0.14);
+    }
+    .reset{
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.06);
+      color: white;
+    }
+
+    .result {
+      grid-column: 1 / -1;
+      padding:12px;
+      border-radius:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      display:flex;
+      align-items:center;
+      gap:12px;
+      justify-content:space-between;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    .result .text{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .media {
+      font-size:20px;font-weight:800;
+      color: white;
+    }
+    .badge {
+      padding:8px 12px;border-radius:999px;font-weight:700;
+      color: #06202a; background: #dff7ea;
+      min-width:120px;text-align:center;
+    }
+
+    /* progress */
+    .meter{
+      width: 100%;
+      height:10px;
+      background: rgba(255,255,255,0.04);
+      border-radius:6px;
+      overflow:hidden;
+      margin-top:8px;
+    }
+    .meter > i{
+      display:block;height:100%;
+      width:0%;
+      background: linear-gradient(90deg, #f97316, #fb923c);
+      border-radius:6px;
+      transition: width 900ms cubic-bezier(.2,.8,.2,1);
+    }
+
+    .note-help{
+      font-size:12px;color:var(--muted);grid-column: 1 / -1;
+    }
+
+    /* small screen adjustments */
+    @media (max-width:520px){
+      form{grid-template-columns:1fr}
+      .logo{width:56px;height:56px}
+    }
+
+    /* playful animation */
+    .sparkle{
+      position:absolute;right:-60px;top:-40px;
+      width:220px;height:220px;border-radius:50%;
+      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.14), rgba(255,255,255,0.02) 30%, transparent 40%);
+      transform: rotate(20deg);
+      filter: blur(18px);
+      pointer-events:none;
+      animation: floaty 6s ease-in-out infinite;
+    }
+    @keyframes floaty{
+      0%{transform: translateY(0) rotate(0)}
+      50%{transform: translateY(-8px) rotate(5deg)}
+      100%{transform: translateY(0) rotate(0)}
+    }
+    /* errors */
+    .error-msg{color:#ffd6d6;background:rgba(255,13,59,0.06);padding:8px;border-radius:8px;font-size:13px;border:1px solid rgba(255,13,59,0.08)}
+    .ok{color:#dff7ea;background:rgba(12,200,120,0.06);padding:6px;border-radius:8px;font-size:13px;border:1px solid rgba(12,200,120,0.08)}
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="title">
+    <div class="sparkle" aria-hidden="true"></div>
+
+    <div class="header">
+      <div class="logo">DG</div>
+      <div>
+        <h1 id="title">Calculadora de Notas</h1>
+        <p class="lead">Coloque suas 4 notas e veja a média — com estilo e feedback amigável ✨</p>
+      </div>
+    </div>
+
+    <form id="notasForm" novalidate>
+      <div class="field">
+        <label for="Nota1">Nota 1</label>
+        <input type="number" id="Nota1" name="Nota1" step="0.01" min="0" max="10" inputmode="decimal" required aria-required="true" />
+      </div>
+
+      <div class="field">
+        <label for="Nota2">Nota 2</label>
+        <input type="number" id="Nota2" name="Nota2" step="0.01" min="0" max="10" inputmode="decimal" required />
+      </div>
+
+      <div class="field">
+        <label for="Nota3">Nota 3</label>
+        <input type="number" id="Nota3" name="Nota3" step="0.01" min="0" max="10" inputmode="decimal" required />
+      </div>
+
+      <div class="field">
+        <label for="Nota4">Nota 4</label>
+        <input type="number" id="Nota4" name="Nota4" step="0.01" min="0" max="10" inputmode="decimal" required />
+      </div>
+
+      <div class="full">
+        <button type="submit" class="btn calc">Calcular média</button>
+        <button type="button" id="limpar" class="btn reset">Limpar</button>
+      </div>
+
+      <div class="note-help">Dica: notas entre 0 e 10. Use decimais com ponto ou vírgula.</div>
+
+      <div class="result" aria-live="polite">
+        <div class="text">
+          <div id="media" class="media">Média: —</div>
+          <div id="classificacao" class="ok" style="display:none;"></div>
+          <div class="meter" aria-hidden="true"><i id="meterFill" style="width:0%"></i></div>
+        </div>
+        <div>
+          <div id="badge" class="badge" aria-hidden="true">—</div>
+        </div>
+      </div>
+
+      <div id="mensagemErro" style="display:none;" class="error-msg" role="alert"></div>
+    </form>
+  </main>
+
+  <script>
+    (function(){
+      const form = document.getElementById('notasForm');
+      const inputs = ['Nota1','Nota2','Nota3','Nota4'].map(id => document.getElementById(id));
+      const mediaEl = document.getElementById('media');
+      const classEl = document.getElementById('classificacao');
+      const badge = document.getElementById('badge');
+      const meter = document.getElementById('meterFill');
+      const err = document.getElementById('mensagemErro');
+      const limparBtn = document.getElementById('limpar');
+
+      // aceita vírgula ou ponto
+      function parseNota(val){
+        if (val === null || val === undefined || val === '') return NaN;
+        return parseFloat(String(val).replace(',', '.'));
+      }
+
+      function validaNotas(vals){
+        for (let i=0;i<vals.length;i++){
+          if (isNaN(vals[i])) return {ok:false, msg: 'Preencha todas as notas corretamente.'};
+          if (vals[i] < 0 || vals[i] > 10) return {ok:false, msg: 'Todas as notas devem ser entre 0 e 10.'};
+        }
+        return {ok:true};
+      }
+
+      function classificar(media){
+        if (media >= 9) return {text:'Excelente ✨', badge:'A+' , tone:'top'};
+        if (media >= 7) return {text:'Bom 👍', badge:'B', tone:'good'};
+        if (media >= 5) return {text:'Regular 🤏', badge:'C', tone:'warn'};
+        return {text:'Reprovado 😕', badge:'D', tone:'bad'};
+      }
+
+      function showError(message){
+        err.style.display = 'block';
+        err.textContent = message;
+      }
+      function clearError(){
+        err.style.display = 'none';
+        err.textContent = '';
+      }
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        clearError();
+
+        const valores = inputs.map(i => parseNota(i.value));
+        const check = validaNotas(valores);
+        if (!check.ok) {
+          showError(check.msg);
+          mediaEl.textContent = 'Média: —';
+          classEl.style.display = 'none';
+          badge.textContent = '—';
+          meter.style.width = '0%';
+          return;
+        }
+
+        const soma = valores.reduce((a,b)=>a+b,0);
+        const media = soma / valores.length;
+        const mediaFmt = media.toFixed(2).replace('.',',');
+
+        // classificação
+        const info = classificar(media);
+
+        mediaEl.textContent = `Média: ${mediaFmt}`;
+        classEl.style.display = 'block';
+        classEl.textContent = info.text;
+
+        // badge com cor dinâmica
+        badge.textContent = info.badge;
+        if (info.tone === 'top') badge.style.background = '#fff6e6', badge.style.color = '#3a2b00';
+        else if (info.tone === 'good') badge.style.background = '#dff7ea', badge.style.color = '#062020';
+        else if (info.tone === 'warn') badge.style.background = '#fff4d6', badge.style.color = '#3a2b00';
+        else badge.style.background = '#ffd6d6', badge.style.color = '#4a0710';
+
+        // meter animation: percent relative a 10
+        const percent = Math.max(0, Math.min(100, (media / 10) * 100));
+        meter.style.width = percent + '%';
+
+        // efeito sutil de "festa" quando média >= 9
+        if (media >= 9) celebrate();
+      });
+
+      limparBtn.addEventListener('click', function(){
+        inputs.forEach(i=>i.value='');
+        mediaEl.textContent = 'Média: —';
+        classEl.style.display = 'none';
+        badge.textContent = '—';
+        meter.style.width = '0%';
+        clearError();
+      });
+
+      // pequeno confete com emojis (não intrusivo)
+      function celebrate(){
+        for (let i=0;i<14;i++){
+          const el = document.createElement('div');
+          el.textContent = ['✨','🎉','🏅','⭐'][Math.floor(Math.random()*4)];
+          el.style.position = 'fixed';
+          el.style.left = (50 + (Math.random()-0.5)*60) + '%';
+          el.style.top = (30 + (Math.random()-0.5)*30) + '%';
+          el.style.opacity = '0';
+          el.style.fontSize = (10 + Math.random()*22) + 'px';
+          el.style.pointerEvents = 'none';
+          el.style.transition = 'transform 900ms ease, opacity 900ms ease';
+          document.body.appendChild(el);
+          requestAnimationFrame(()=> {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(-120px) rotate(' + ((Math.random()*90)-45) + 'deg)';
+          });
+          setTimeout(()=> { el.style.opacity = '0'; el.remove(); }, 1200 + Math.random()*600);
+        }
+      }
+
+    })();
+  </script>
+</body>
+</html>
